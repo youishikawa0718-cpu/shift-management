@@ -6,9 +6,9 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Run stage
+# Run stage with SSL support
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/templates/default.conf.template
-EXPOSE 80
+COPY nginx.ssl.conf /etc/nginx/templates/default.conf.template
+EXPOSE 80 443
 CMD ["nginx", "-g", "daemon off;"]

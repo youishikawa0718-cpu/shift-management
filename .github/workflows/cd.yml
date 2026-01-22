@@ -1,0 +1,75 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    # CIが成功した場合のみ実行
+    needs: []
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/shift-management
+
+            # Pull latest code
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Rebuild and restart containers
+            if [ -f docker-compose.ssl.yml ] && [ -d certbot/conf/live ]; then
+              # SSL enabled
+              docker-compose -f docker-compose.ssl.yml build
+              docker-compose -f docker-compose.ssl.yml up -d
+            else
+              # HTTP only
+              docker-compose -f docker-compose.prod.yml build
+              docker-compose -f docker-compose.prod.yml up -d
+            fi
+
+            # Cleanup old images
+            docker image prune -f
+
+            echo "Deployment completed successfully!"
+
+      - name: Health check
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Wait for services to start
+            sleep 15
+
+            # Check if containers are running
+            if docker ps | grep -q shift-backend; then
+              echo "Backend is running"
+            else
+              echo "Backend failed to start!"
+              exit 1
+            fi
+
+            if docker ps | grep -q shift-frontend; then
+              echo "Frontend is running"
+            else
+              echo "Frontend failed to start!"
+              exit 1
+            fi
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "Deployment failed! Check the logs above."

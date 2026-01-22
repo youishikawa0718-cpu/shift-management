@@ -109,7 +109,8 @@ docker-compose up --build
 
 # アクセス
 # - Frontend: http://localhost:3000
-# - Backend API: http://localhost:8080
+# - Backend API: http://localhost:80803
+
 # - Swagger UI: http://localhost:8080/swagger-ui.html
 ```
 
