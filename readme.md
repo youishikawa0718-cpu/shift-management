@@ -5,8 +5,6 @@
 ## デモ
 🚀 **Live Demo**: http://54.65.90.180
 
-📖 **API Documentation**: `http://localhost:8080/swagger-ui.html`
-
 ## デプロイ
 
 ### 本番環境
