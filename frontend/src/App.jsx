@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'))
-  const [user, setUser] = useState(null)
-  const [page, setPage] = useState('login')
+  const [page, setPage] = useState(() => localStorage.getItem('token') ? 'home' : 'login')
 
-  useEffect(() => {
-    if (token) {
+  const user = useMemo(() => {
+    if (!token) return null
+    try {
       const payload = JSON.parse(atob(token.split('.')[1]))
-      setUser({ email: payload.sub, role: payload.role })
-      setPage('home')
+      return { email: payload.sub, role: payload.role }
+    } catch {
+      return null
     }
   }, [token])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     setToken(null)
-    setUser(null)
     setPage('login')
   }
 
@@ -169,7 +169,7 @@ function ShiftRequestPage({ token }) {
   const [message, setMessage] = useState('')
   const [requests, setRequests] = useState([])
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     const res = await fetch('/api/shift-requests/me', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -177,11 +177,11 @@ function ShiftRequestPage({ token }) {
       const data = await res.json()
       setRequests(data)
     }
-  }
+  }, [token])
 
   useEffect(() => {
     fetchRequests()
-  }, [])
+  }, [fetchRequests])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -298,7 +298,7 @@ function MyShiftsPage({ token }) {
       }
     }
     fetchShifts()
-  }, [])
+  }, [token])
 
   return (
     <div className="bg-white p-6 rounded shadow">
@@ -332,7 +332,7 @@ function MyShiftsPage({ token }) {
 function ApprovePage({ token }) {
   const [requests, setRequests] = useState([])
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     const res = await fetch('/api/shift-requests/pending', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -340,11 +340,11 @@ function ApprovePage({ token }) {
       const data = await res.json()
       setRequests(data)
     }
-  }
+  }, [token])
 
   useEffect(() => {
     fetchRequests()
-  }, [])
+  }, [fetchRequests])
 
   const handleApprove = async (id) => {
     await fetch(`/api/shift-requests/${id}/approve`, {
@@ -416,7 +416,7 @@ function EmployeesPage({ token }) {
       }
     }
     fetchEmployees()
-  }, [])
+  }, [token])
 
   return (
     <div className="bg-white p-6 rounded shadow">
