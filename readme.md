@@ -3,9 +3,30 @@
 アルバイトのシフト申請・承認・管理を行うフルスタックWebアプリケーションです。
 
 ## デモ
-🚀 **Live Demo**: (デプロイ後にURLを追加)
+🚀 **Live Demo**: http://54.65.90.180
 
 📖 **API Documentation**: `http://localhost:8080/swagger-ui.html`
+
+## デプロイ
+
+### 本番環境
+- **URL**: http://54.65.90.180
+- **AWS EC2** (Amazon Linux 2023)
+- **Docker Compose** によるコンテナ管理
+
+### CI/CD パイプライン
+GitHub Actions による自動デプロイを構成しています。
+
+`main` ブランチにプッシュすると自動的に:
+1. **CI**: ESLint / テスト実行
+2. **CD**: EC2へSSHデプロイ
+
+### 必要なGitHub Secrets
+| Name | 説明 |
+|------|------|
+| `EC2_HOST` | EC2のパブリックIPアドレス |
+| `EC2_USER` | SSHユーザー名 (`ec2-user`) |
+| `EC2_SSH_KEY` | SSH秘密鍵 (.pemファイルの中身) |
 
 ## 主な機能
 
