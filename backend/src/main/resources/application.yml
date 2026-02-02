@@ -25,6 +25,6 @@ server:
   port: 8080
 
 jwt:
-  secret: shift-management-secret-key-for-jwt-token-generation-2024
-  expiration: 86400000
-  refresh-expiration: 604800000
+  secret: ${JWT_SECRET:shift-management-dev-secret-key-minimum-32-chars}
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
